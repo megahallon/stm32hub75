@@ -10,11 +10,10 @@
 #include <stdint.h>
 #include "config.h"
 
-#define CLK 1
- 
+
 //Number of bits to clock out each time
 #define FRAMEBUFFER_BITSPERLINE	(MATRIX_PANEL_WIDTH * MATRIX_PANELSW * MATRIX_PANELSH)
-#define FRAMEBUFFER_SHIFTLEN	(FRAMEBUFFER_BITSPERLINE * CLK)
+#define FRAMEBUFFER_SHIFTLEN	FRAMEBUFFER_BITSPERLINE
 #define FRAMEBUFFER_CLOCK	(1<<15)
 
 void framebuffer_init(void);

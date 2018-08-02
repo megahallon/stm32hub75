@@ -36,7 +36,6 @@
 #include "stm32f1xx_it.h"
 
 /* USER CODE BEGIN 0 */
-extern DMA_HandleTypeDef hdma;
 extern void UART_IRQHandler(UART_HandleTypeDef *huart);
 
 /* USER CODE END 0 */
@@ -226,9 +225,5 @@ void USART2_IRQHandler(void)
 }
 
 /* USER CODE BEGIN 1 */
-void DMA1_Channel1_IRQHandler(void) 
-{
-	HAL_DMA_IRQHandler(&hdma);
-}
 /* USER CODE END 1 */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
