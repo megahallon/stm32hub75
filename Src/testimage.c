@@ -168,7 +168,7 @@ void loop() {
   // This is preferable to delay() because the AVR is already plenty slow.
   uint32_t t;
   //while(((t = millis()) - prevTime) < (1000 / FPS));
-	HAL_Delay(20);
+	//HAL_Delay(10);
   prevTime = t;
 
   sx1 = (int)(cos(angle1) * radius1 + centerx1);
@@ -180,7 +180,7 @@ void loop() {
   y3  = (int)(sin(angle3) * radius3 + centery3);
   y4  = (int)(sin(angle4) * radius4 + centery4);
 
-  for(y = 0; y < 32; y++) {
+  for(y = 0; y < MATRIX_HEIGHT; y++) {
     x1 = sx1; x2 = sx2; x3 = sx3; x4 = sx4;
     for(x = 0; x < 32; x++) {
       value = hueShift
@@ -205,24 +205,6 @@ void loop() {
 void testimage_init() {
 	while (1) {
 		loop();
+		check_wifi_connection();
 	};
-	
-
-	unsigned int x, y;
-	for (x = 0; x < MATRIX_WIDTH; ++x) {
-		for (y = 0; y < MATRIX_HEIGHT; ++y) {
-			if (x < 32)
-				testimage_set(x, y, 0, y * 255 / 32, 0);
-			/*
-			if (y < 16) {
-				unsigned int c = x * (sizeof(topcolors) / 3) / MATRIX_WIDTH;
-				testimage_setb(x, y, &topcolors[c * 3]);
-			} else {
-				unsigned int c = x * (sizeof(barcolors) / 3) / MATRIX_WIDTH;
-				testimage_setb(x, y, &barcolors[c * 3]);
-			}
-			*/
-		}
-	}
-	framebuffer_swap();
 }

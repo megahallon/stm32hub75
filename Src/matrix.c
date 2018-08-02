@@ -5,6 +5,7 @@
 unsigned int matrix_row;
 
 #define GPIO_LATCH (1 << 9)
+#define GPIO_OE (1 << 10)
 
 DMA_HandleTypeDef hdma;
 extern TIM_HandleTypeDef htim2;
@@ -17,7 +18,7 @@ void matrix_next() {
 	
 	int show = matrix_row;
 
-  GPIOB->ODR = (1 << 10) | (matrix_row << 11) | GPIO_LATCH;
+  GPIOB->ODR = GPIO_OE | (matrix_row << 11) | GPIO_LATCH;
 
 	dma_ptr += FRAMEBUFFER_SHIFTLEN * sizeof(uint16_t);
 	
@@ -38,11 +39,10 @@ void matrix_next() {
 		GPIOB->ODR = (show << 11) | ((uint16_t*)dma_ptr)[i];
 		GPIOB->BSRR = (1 << 15);
 	}
-	GPIOB->ODR = (1 << 10);
+	GPIOB->ODR = GPIO_OE;
 	
   htim2.Instance->CNT = 0;
 	htim2.Instance->PSC = prescaler;
-	//htim2.Instance->EGR |= TIM_EGR_UG;
   htim2.Instance->CR1 |= TIM_CR1_CEN;
 }
 
@@ -68,18 +68,20 @@ void matrix_init_timer() {
 	htim2.Instance = TIM2;
 	htim2.Init.Prescaler = 1;
 	htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-	htim2.Init.Period = 0x80;
+	htim2.Init.Period = 0x100;
 	htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV2;
 	htim2.Init.RepetitionCounter = 0;
 	htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
 
 	HAL_TIM_Base_Init(&htim2);
 	
+	/*
 	TIM_OC_InitTypeDef oc_config = { 0 };
 	oc_config.OCMode = TIM_OCMODE_PWM1;
 	oc_config.Pulse = MATRIX_MINIMUM_DISPLAY_TIME;
 	oc_config.OCPolarity = TIM_OCPOLARITY_HIGH;
 	oc_config.OCFastMode = TIM_OCFAST_DISABLE;
+	*/
 	
 	//HAL_TIM_OC_ConfigChannel(&htim2, &oc_config, TIM_CHANNEL_3);
 
