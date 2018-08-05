@@ -2,6 +2,7 @@
 #include "stm32f1xx_hal.h"
 
 #include <math.h>
+#include "gfx.h"
 
 void testimage_set(unsigned int x, unsigned int y, uint8_t r, uint8_t g, uint8_t b) {
 	uint8_t rgb[3];
@@ -58,11 +59,8 @@ const float radius1 =16.3, radius2 =23.0, radius3 =40.8, radius4 =44.2,
 float       angle1  = 0.0, angle2  = 0.0, angle3  = 0.0, angle4  = 0.0;
 long        hueShift= 0;
 
-#define FPS 15         // Maximum frames-per-second
-uint32_t prevTime = 0; // For frame-to-frame interval timing
-
 void ColorHSV(long hue, uint8_t sat, uint8_t val, char gflag, 
-	uint8_t* _r, uint8_t* _g, uint8_t* _b) {
+	      uint16_t* rgb) {
 
   uint8_t  r, g, b, lo;
   uint16_t s1, v1;
@@ -91,24 +89,23 @@ void ColorHSV(long hue, uint8_t sat, uint8_t val, char gflag,
   // Value (brightness) & 16-bit color reduction: similar to above, add 1
   // to allow shifts, and upgrade to int makes other conversions implicit.
   v1 = val + 1;
-  *_r = (r * v1) >> 8;
-  *_g = (g * v1) >> 8;
-  *_b = (b * v1) >> 8;
+  r = (r * v1) >> 8;
+  g = (g * v1) >> 8;
+  b = (b * v1) >> 8;
+  *rgb = ((r >> 4) << 8) | ((g >> 4) << 4) | (b >> 4);
 }
 
+static int skip = 1;
+
 void loop() {
-  int           x1, x2, x3, x4, y1, y2, y3, y4, sx1, sx2, sx3, sx4;
+  int x1, x2, x3, x4, y1, y2, y3, y4, sx1, sx2, sx3, sx4;
   unsigned char x, y;
-  long          value;
-	uint8_t r, g, b;
+  long value;
+  uint16_t rgb;
 	
-  // To ensure that animation speed is similar on AVR & SAMD boards,
-  // limit frame rate to FPS value (might go slower, but never faster).
-  // This is preferable to delay() because the AVR is already plenty slow.
-  uint32_t t;
-  //while(((t = millis()) - prevTime) < (1000 / FPS));
-	//HAL_Delay(10);
-  prevTime = t;
+  if (--skip != 0)
+	  return;
+  skip = 5000;
 
   sx1 = (int)(cos(angle1) * radius1 + centerx1);
   sx2 = (int)(cos(angle2) * radius2 + centerx2);
@@ -121,14 +118,14 @@ void loop() {
 
   for(y = 0; y < MATRIX_HEIGHT; y++) {
     x1 = sx1; x2 = sx2; x3 = sx3; x4 = sx4;
-    for(x = 0; x < 32; x++) {
+    for(x = 0; x < MATRIX_WIDTH; x++) {
       value = hueShift
         + sinetab[MIN(255, (x1 * x1 + y1 * y1) >> 2)]
         + sinetab[MIN(255, (x2 * x2 + y2 * y2) >> 2)]
         + sinetab[MIN(255, (x3 * x3 + y3 * y3) >> 3)]
         + sinetab[MIN(255, (x4 * x4 + y4 * y4) >> 3)];
-			ColorHSV(value * 3, 255, 255, 0, &r, &g, &b);
-      testimage_set(x, y, r, g, b);
+      ColorHSV(value * 3, 255, 255, 0, &rgb);
+      drawPixel(x, y, rgb);
       x1--; x2--; x3--; x4--;
     }
     y1--; y2--; y3--; y4--;
@@ -141,9 +138,20 @@ void loop() {
   hueShift += 2;
 }
 
+static int xx = 0;
+
 void testimage_init() {
 	while (1) {
-		loop();
-		check_wifi_connection();
+		setTextColor(0xf00, 0);
+		setCursor(xx, 0);
+		drawString("Hello stm32 foo bar gaz!");
+		if (--skip == 0) {
+			--xx;
+			skip = 10;
+		}
+	}
+	while (1) {
+		//loop();
+		//check_wifi_connection();
 	}
 }

@@ -15,7 +15,9 @@ void framebuffer_init() {
 }
 
 void framebuffer_write(uint8_t x, uint8_t y, uint8_t rgb[3]) {
-	uint8_t bits[] = {0, 1, 3, 4, 5, 8};
+	if (x > MATRIX_WIDTH || y > MATRIX_HEIGHT) return;
+
+	static const uint8_t bits[] = {0, 1, 3, 4, 5, 8};
 	uint8_t scanrow = y % MATRIX_PANEL_SCANROWS;
 	uint8_t bus = (y / MATRIX_PANEL_SCANROWS) % MATRIX_PANEL_BUSES;
 	unsigned int offset = (scanrow * FRAMEBUFFER_ROWLEN) + x;
